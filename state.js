@@ -164,4 +164,34 @@ export class State {
       return null
     }
   }
+
+  success() {
+    for (let i = 0; i < 9; i ++) {
+      let s1 = this._get_number()
+      let s2 = this._get_number()
+      for (let j = 0; j < 9; j++) {
+        s1.delete(this.get(i, j))
+        s2.delete(this.get(j, i))
+      }
+      if (s1.size != 0 || s2.size != 0) {
+        return false
+      }
+    }
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        let lt_x_relative = i * 3
+        let lt_y_relative = j * 3
+        let s = this._get_number()
+        for (let i1 = 0; i1 < 3; i1++) {
+          for (let j1 = 0; j1 < 3; j1++) {
+            s.delete(this.get(lt_x_relative + i1, lt_y_relative + j1))
+          }
+        }
+        if (s.size != 0) {
+          return false
+        }
+      }
+    }
+    return true
+  }
 }
