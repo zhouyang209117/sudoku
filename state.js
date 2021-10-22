@@ -21,6 +21,30 @@ export class State {
     }
   }
 
+  get_array() {
+    let demo1_array = new Array()
+    for (let i = 0; i < 81; i++) {
+      let value = 0
+      if (i % 2 == 0) {
+        let index = i / 2
+        value = this.buf[index] >> 4
+      } else {
+        let index = (i - 1) / 2
+        value = this.buf[index] & 15
+      }
+      demo1_array.push(value)
+    }
+    let result = new Array()
+    for (let i = 0; i < 9; i++) {
+      let arr = new Array()
+      for (let j = 0; j < 9; j++) {
+        arr.push(demo1_array[i * 9 + j])
+      }
+      result.push(arr)
+    }
+    return result
+  }
+
   get(x, y) {
     if (this.buf == null) {
       return -1
@@ -51,7 +75,7 @@ export class State {
     if (pos % 2 == 0) {
       index = pos / 2
       let current = this.buf[index]
-      let new_value = (((current << 4) >> 4) | (value << 4))
+      let new_value = (current & 15) | (value << 4)
       this.buf.fill(new_value, index, index + 1)
     } else {
       index = (pos - 1) / 2
@@ -61,30 +85,26 @@ export class State {
     }
   }
 
-  _get_set() {
-    let arr = new Array(10)
-    for (let i = 1; i < arr.length; i++) {
-      arr[i] = i
+  _get_number() {
+    let arr = new Array()
+    for (let i = 0; i < 9; i++) {
+      arr.push(i + 1)
     }
     return new Set(arr)
   }
 
   _get_row_candidate(set, row) {
     for (let i = 0; i < 9; i++) {
-      let value = this.buf.get(row, i)
-      if (set.has(value)) {
-        set.delete(i)
-      }
+      let value = this.get(row, i)
+      set.delete(value)
     }
     return set
   }
 
   _get_col_candidate(set, col) {
     for (let i = 0; i < 9; i++) {
-      let value = this.buf.get(i, col)
-      if (set.has(value)) {
-        set.delete(i)
-      }
+      let value = this.get(i, col)
+      set.delete(value)
     }
     return set
   }
@@ -96,10 +116,15 @@ export class State {
     let left_y = y - relative_y
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
-        set.delete(this.buf.get(left_x + i, left_y + j))
+        set.delete(this.get(left_x + i, left_y + j))
       }
     }
     return set
+  }
+
+  _deep_copy() {
+    let s1 = new State(this.get_array())
+    return s1
   }
 
   next() {
@@ -112,16 +137,28 @@ export class State {
           x = i
           y = j
           found = true
+          break
         }
+      }
+      if (found) {
+        break
       }
     }
     if (found) {
-      let set = this._get_set()
+      let set = this._get_number()
       set = this._get_row_candidate(set, x)
       set = this._get_col_candidate(set, y)
       set = this._get_square_candidate(set, x, y)
       if (set.size == 0) {
         return null
+      } else {
+        let result = new Array()
+        for (let s of set) {
+          let newState = this._deep_copy()
+          newState.set(x, y, s)
+          result.push(newState)
+        }
+        return result
       }
     } else {
       return null
