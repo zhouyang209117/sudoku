@@ -21,6 +21,9 @@ export class State {
     }
   }
 
+  toString() {
+    return this.buf.toString()
+  }
   get_array() {
     let demo1_array = new Array()
     for (let i = 0; i < 81; i++) {
